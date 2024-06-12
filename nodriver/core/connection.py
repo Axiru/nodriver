@@ -556,6 +556,9 @@ class Listener:
                     # complete the transaction, which is a Future object
                     # and thus will return to anyone awaiting it.
                     tx(**message)
+                    
+                    # remove data that will no longer be used
+                    del self.connection.mapper[message["id"]]
             else:
                 # probably an event
                 try:
