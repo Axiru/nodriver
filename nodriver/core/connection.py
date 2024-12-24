@@ -228,7 +228,8 @@ class Connection(metaclass=CantTouchThis):
     def closed(self):
         if not self.websocket:
             return True
-        return self.websocket.closed
+        
+        return self.websocket.state == websockets.protocol.CLOSED
 
     def add_handler(
         self,
@@ -279,7 +280,7 @@ class Connection(metaclass=CantTouchThis):
         :return:
         """
 
-        if not self.websocket or self.websocket.closed:
+        if not self.websocket or (self.websocket.state == websockets.protocol.CLOSED):
             try:
                 self.websocket = await websockets.connect(
                     self.websocket_url,
@@ -306,7 +307,7 @@ class Connection(metaclass=CantTouchThis):
         """
         closes the websocket connection. should not be called manually by users.
         """
-        if self.websocket and not self.websocket.closed:
+        if self.websocket and not (self.websocket.state == websockets.protocol.CLOSED):
             if self.listener and self.listener.running:
                 self.listener.cancel()
                 self.enabled_domains.clear()
