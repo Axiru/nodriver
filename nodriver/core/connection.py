@@ -444,7 +444,6 @@ class Connection(metaclass=CantTouchThis):
                     tx(**message)
                     
                     # remove data that will no longer be used
-                    del self.connection.mapper[message["id"]]
                     logger.debug("got answer for (message_id:%d) => %s", tx.id, message)
                 else:
                     # probably an event
