@@ -148,6 +148,11 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: ServiceWorkerRouterSource
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: ServiceWorkerRouterInfo
       :members:
       :undoc-members:
@@ -183,6 +188,11 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: CookiePartitionKey
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: Cookie
       :members:
       :undoc-members:
@@ -198,12 +208,22 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: CookieExemptionReason
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: BlockedSetCookieWithReason
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: BlockedCookieWithReason
+.. autoclass:: ExemptedSetCookieWithReason
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: AssociatedCookie
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -259,6 +279,16 @@ arguments to other commands.
       :exclude-members: from_json, to_json
 
 .. autoclass:: ContentEncoding
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DirectSocketDnsQueryType
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DirectTCPSocketOptions
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -416,6 +446,8 @@ to. For more information, see
 
 .. autofunction:: set_cookie
 
+.. autofunction:: set_cookie_controls
+
 .. autofunction:: set_cookies
 
 .. autofunction:: set_extra_http_headers
@@ -535,6 +567,26 @@ you use the event's attributes.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: DirectTCPSocketCreated
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DirectTCPSocketOpened
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DirectTCPSocketAborted
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DirectTCPSocketClosed
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: RequestWillBeSentExtraInfo
       :members:
       :undoc-members:
@@ -545,7 +597,17 @@ you use the event's attributes.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: ResponseReceivedEarlyHints
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: TrustTokenOperationDone
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: PolicyUpdated
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json

@@ -1,20 +1,22 @@
-import re
-import os
-import json
-import typing
-import shutil
 import builtins
+import itertools
+import json
 import logging
 import operator
-import itertools
-import urllib.request
+import os
+import re
+import shutil
+import typing
 import urllib.parse
-import inflection  # type: ignore
+import urllib.request
+from argparse import ArgumentParser, ArgumentTypeError
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from dataclasses import dataclass
-from argparse import ArgumentParser, ArgumentTypeError
-from textwrap import dedent, indent as tw_indent
+from textwrap import dedent
+from textwrap import indent as tw_indent
+
+import inflection  # type: ignore
 
 log_level = getattr(logging, os.environ.get("LOG_LEVEL", "info").upper())
 logging.basicConfig(level=log_level)
@@ -1016,7 +1018,7 @@ def generate_docs(docs_path, domains):
     # Generate document for each domain
     for domain in domains:
         doc = docs_path / f"{domain.module}.rst"
-        with doc.aopen("w") as f:
+        with doc.open("w") as f:
             f.write(domain.generate_sphinx())
 
 

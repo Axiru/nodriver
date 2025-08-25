@@ -49,6 +49,16 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: InsightType
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: CookieIssueInsight
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: CookieIssueDetails
       :members:
       :undoc-members:
@@ -134,6 +144,16 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: SharedDictionaryError
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: SRIMessageSignatureError
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: AttributionReportingIssueDetails
       :members:
       :undoc-members:
@@ -145,6 +165,16 @@ arguments to other commands.
       :exclude-members: from_json, to_json
 
 .. autoclass:: NavigatorUserAgentIssueDetails
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: SharedDictionaryIssueDetails
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: SRIMessageSignatureIssueDetails
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -205,6 +235,26 @@ arguments to other commands.
       :exclude-members: from_json, to_json
 
 .. autoclass:: FailedRequestInfo
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: PartitioningBlobURLInfo
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: PartitioningBlobURLIssueDetails
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: SelectElementAccessibilityIssueReason
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: SelectElementAccessibilityIssueDetails
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json

@@ -5,6 +5,9 @@ NODRIVER
 ##################
 
 
+`CLICK HERE FOR DOCS  <https://ultrafunkamsterdam.github.io/nodriver/>`_
+____
+
 **This package provides next level webscraping and browser automation
 using a relatively simple interface.**
 
@@ -26,6 +29,14 @@ by default.
 While usability and convenience is important. It's also easy
 to fully customizable everything using the entire array of
 `CDP <https://chromedevtools.github.io/devtools-protocol />`_ domains, methods and events available.
+
+
+.. video:: cf_verify_.mp4
+    :autoplay:
+    :playsinline:
+    :muted:
+    :width: 500
+
 
 
 Some features

@@ -1,4 +1,11 @@
-from nodriver import start, cdp, loop
+try:
+    from nodriver import cdp, loop, start
+except (ModuleNotFoundError, ImportError):
+    import os
+    import sys
+
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+    from nodriver import cdp, loop, start
 
 
 async def main():
@@ -44,6 +51,7 @@ async def main():
 
 async def receive_handler(event: cdp.network.ResponseReceived):
     print(event.response)
+
 
 async def send_handler(event: cdp.network.RequestWillBeSent):
     r = event.request

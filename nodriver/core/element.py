@@ -1,16 +1,21 @@
+# Copyright 2024 by UltrafunkAmsterdam (https://github.com/UltrafunkAmsterdam)
+# All rights reserved.
+# This file is part of the nodriver package.
+# and is released under the "GNU AFFERO GENERAL PUBLIC LICENSE".
+# Please see the LICENSE.txt file that should have been included as part of this package.
+
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 import pathlib
 import secrets
 import typing
 
+from .. import cdp
 from . import util
 from ._contradict import ContraDict
 from .config import PathLike
-from .. import cdp
 
 logger = logging.getLogger(__name__)
 
@@ -51,9 +56,7 @@ class Element:
         if not node:
             raise Exception("node cannot be None")
         self._tab = tab
-        # if node.node_name == 'IFRAME':
-        #     self._node = node.content_document
-        # else:
+
         self._node = node
         self._tree = tree
         self._parent = None
@@ -190,6 +193,13 @@ class Element:
     def tab(self):
         return self._tab
 
+    @property
+    def shadow_children(self):
+        if self.shadow_roots:
+            root = self.shadow_roots[0]
+            if root.shadow_root_type == cdp.dom.ShadowRootType.OPEN_:
+                return [create(child, self.tab) for child in root.children]
+
     def __getattr__(self, item):
         # if attribute is not found on the element python object
         # check if it may be present in the element attributes (eg, href=, src=, alt=)
@@ -198,10 +208,8 @@ class Element:
         x = getattr(self.attrs, item, None)
         if x:
             return x
-
-    #     x = getattr(self.node, item, None)
-    #
-    #     return x
+        else:
+            logger.debug("could not find attribute '%s' in %s" % (item, self.attrs))
 
     def __setattr__(self, key, value):
         if key[0] != "_":
@@ -273,13 +281,10 @@ class Element:
         """
         if _node:
             doc = _node
-            # self._node = _node
-            # self._children.clear()
             self._parent = None
         else:
             doc = await self._tab.send(cdp.dom.get_document(-1, True))
             self._parent = None
-        # if self.node_name != "IFRAME":
         updated_node = util.filter_recurse(
             doc, lambda n: n.backend_node_id == self._node.backend_node_id
         )
@@ -512,7 +517,6 @@ class Element:
         button: str = "left",
         buttons: typing.Optional[int] = 1,
         modifiers: typing.Optional[int] = 0,
-        hold: bool = False,
         _until_event: typing.Optional[type] = None,
     ):
         """native click (on element) . note: this likely does not work atm, use click() instead
@@ -535,34 +539,39 @@ class Element:
 
         logger.debug("clicking on location %.2f, %.2f" % center)
 
-        await asyncio.gather(
-            self._tab.send(
-                cdp.input_.dispatch_mouse_event(
-                    "mousePressed",
-                    x=center[0],
-                    y=center[1],
-                    modifiers=modifiers,
-                    button=cdp.input_.MouseButton(button),
-                    buttons=buttons,
-                    click_count=1,
-                )
-            ),
-            self._tab.send(
-                cdp.input_.dispatch_mouse_event(
-                    "mouseReleased",
-                    x=center[0],
-                    y=center[1],
-                    modifiers=modifiers,
-                    button=cdp.input_.MouseButton(button),
-                    buttons=buttons,
-                    click_count=1,
-                )
-            ),
-        )
-        try:
-            await self.flash()
-        except:  # noqa
-            pass
+        await self._tab.mouse_click(center[0], center[1])
+        await self._tab.flash_point(center[0], center[1])
+
+        # await asyncio.gather(
+        #     self._tab.send(
+        #         cdp.input_.dispatch_mouse_event(
+        #             "mousePressed",
+        #             x=center[0],
+        #             y=center[1],
+        #             modifiers=modifiers,
+        #             button=cdp.input_.MouseButton(button),
+        #             buttons=buttons,
+        #             click_count=1,
+        #         )
+        #     ),
+        #     self._tab.send(
+        #         cdp.input_.dispatch_mouse_event(
+        #             "mouseReleased",
+        #             x=center[0],
+        #             y=center[1],
+        #             modifiers=modifiers,
+        #             button=cdp.input_.MouseButton(button),
+        #             buttons=buttons,
+        #             click_count=1,
+        #         )
+        #     ),
+        # )
+        # try:
+        #     await self.flash()
+        # except:  # noqa
+        #     pass
+
+    click_mouse = mouse_click
 
     async def mouse_move(self):
         """moves mouse (not click), to element position. when an element has an
@@ -575,13 +584,14 @@ class Element:
         logger.debug(
             "mouse move to location %.2f, %.2f where %s is located", *center, self
         )
-        await self._tab.send(
-            cdp.input_.dispatch_mouse_event("mouseMoved", x=center[0], y=center[1])
-        )
-        await self._tab.sleep(0.05)
-        await self._tab.send(
-            cdp.input_.dispatch_mouse_event("mouseReleased", x=center[0], y=center[1])
-        )
+        await self._tab.mouse_move(center[0], center[1])
+
+        #     cdp.input_.dispatch_mouse_event("mouseMoved", x=center[0], y=center[1])
+        # )
+        # await self._tab.sleep(0.05)
+        # await self._tab.send(
+        #     cdp.input_.dispatch_mouse_event("mouseReleased", x=center[0], y=center[1])
+        # )
 
     async def mouse_drag(
         self,
@@ -630,52 +640,54 @@ class Element:
                 )
             else:
                 end_point = destination
-
-        await self._tab.send(
-            cdp.input_.dispatch_mouse_event(
-                "mousePressed",
-                x=start_point[0],
-                y=start_point[1],
-                button=cdp.input_.MouseButton("left"),
-            )
+        await self._tab.mouse_drag(
+            start_point, end_point, relative=relative, steps=steps
         )
-
-        steps = 1 if (not steps or steps < 1) else steps
-        if steps == 1:
-            await self._tab.send(
-                cdp.input_.dispatch_mouse_event(
-                    "mouseMoved",
-                    x=end_point[0],
-                    y=end_point[1],
-                )
-            )
-        elif steps > 1:
-            # probably the worst waay of calculating this. but couldn't think of a better solution today.
-            step_size_x = (end_point[0] - start_point[0]) / steps
-            step_size_y = (end_point[1] - start_point[1]) / steps
-            pathway = [
-                (start_point[0] + step_size_x * i, start_point[1] + step_size_y * i)
-                for i in range(steps + 1)
-            ]
-
-            for point in pathway:
-                await self._tab.send(
-                    cdp.input_.dispatch_mouse_event(
-                        "mouseMoved",
-                        x=point[0],
-                        y=point[1],
-                    )
-                )
-                await asyncio.sleep(0)
-
-        await self._tab.send(
-            cdp.input_.dispatch_mouse_event(
-                type_="mouseReleased",
-                x=end_point[0],
-                y=end_point[1],
-                button=cdp.input_.MouseButton("left"),
-            )
-        )
+        # await self._tab.send(
+        #     cdp.input_.dispatch_mouse_event(
+        #         "mousePressed",
+        #         x=start_point[0],
+        #         y=start_point[1],
+        #         button=cdp.input_.MouseButton("left"),
+        #     )
+        # )
+        #
+        # steps = 1 if (not steps or steps < 1) else steps
+        # if steps == 1:
+        #     await self._tab.send(
+        #         cdp.input_.dispatch_mouse_event(
+        #             "mouseMoved",
+        #             x=end_point[0],
+        #             y=end_point[1],
+        #         )
+        #     )
+        # elif steps > 1:
+        #     # probably the worst waay of calculating this. but couldn't think of a better solution today.
+        #     step_size_x = (end_point[0] - start_point[0]) / steps
+        #     step_size_y = (end_point[1] - start_point[1]) / steps
+        #     pathway = [
+        #         (start_point[0] + step_size_x * i, start_point[1] + step_size_y * i)
+        #         for i in range(steps + 1)
+        #     ]
+        #
+        #     for point in pathway:
+        #         await self._tab.send(
+        #             cdp.input_.dispatch_mouse_event(
+        #                 "mouseMoved",
+        #                 x=point[0],
+        #                 y=point[1],
+        #             )
+        #         )
+        #         await asyncio.sleep(0)
+        #
+        # await self._tab.send(
+        #     cdp.input_.dispatch_mouse_event(
+        #         type_="mouseReleased",
+        #         x=end_point[0],
+        #         y=end_point[1],
+        #         button=cdp.input_.MouseButton("left"),
+        #     )
+        # )
 
     async def scroll_into_view(self):
         """scrolls element into view"""
@@ -735,14 +747,23 @@ class Element:
         return await self.apply("(element) => element.focus()")
 
     async def select_option(self):
-        """for form (select) fields. when you have queried the options you can call this method on the option object
+        """
+        for form (select) fields. when you have queried the options you can call this method on the option object.
+        02/08/2024: fixed the problem where events are not fired when programattically selecting an option.
 
         calling :func:`option.select_option()` will use that option as selected value.
         does not work in all cases.
 
         """
         if self.node_name == "OPTION":
-            return await self.apply("(o) => o.selected = true")
+            await self.apply(
+                """
+                (o) => {  
+                    o.selected = true ; 
+                    o.dispatchEvent(new Event('change', {view: window,bubbles: true}))
+                }
+                """
+            )
 
     async def set_value(self, value):
         await self._tab.send(cdp.dom.set_node_value(node_id=self.node_id, value=value))
@@ -804,7 +825,21 @@ class Element:
         await self.update()
         return await self.tab.query_selector(selector, self)
 
-    #
+    # async def find_all(self, string: str):
+    #     base_node = self.node
+    #     if self.node.node_name == "IFRAME":
+    #         if self.node.content_document:
+    #             base_node = self.node.content_document
+    #     cdp.target.attach_to_target()
+    #     cdp.target.create_target()
+    #     cdp.target.create_browser_context()
+    #     search_id, nresult = await self.tab.send(cdp.dom.perform_search(string, True))
+    #     if nresult:
+    #         node_ids = await self.send(
+    #             cdp.dom.get_search_results(search_id, 0, nresult)
+    #         )
+    #         # doc = await self.send(cdp.dom.get_document(-1, True))
+
     async def save_screenshot(
         self,
         filename: typing.Optional[PathLike] = "auto",
@@ -826,9 +861,9 @@ class Element:
         :rtype: str
         """
 
-        import urllib.parse
-        import datetime
         import base64
+        import datetime
+        import urllib.parse
 
         pos = await self.get_position()
         if not pos:
@@ -1086,7 +1121,8 @@ class Element:
 
     def __eq__(self, other: Element) -> bool:
         # if other.__dict__.values() == self.__dict__.values():
-        #     return True
+        if not other:
+            return False
         if other.backend_node_id and self.backend_node_id:
             return other.backend_node_id == self.backend_node_id
 
@@ -1154,3 +1190,12 @@ class Position(cdp.dom.Quad):
 
     def __repr__(self):
         return f"<Position(x={self.left}, y={self.top}, width={self.width}, height={self.height})>"
+
+
+async def resolve_node(tab: Tab, node_id: cdp.dom.NodeId):
+    remote_obj: cdp.runtime.RemoteObject = await tab.send(
+        cdp.dom.resolve_node(node_id=node_id)
+    )
+    node_id: cdp.dom.NodeId = await tab.send(cdp.dom.request_node(remote_obj.object_id))
+    node: cdp.dom.Node = await tab.send(cdp.dom.describe_node(node_id))
+    return node

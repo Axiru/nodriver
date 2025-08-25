@@ -78,6 +78,11 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: ResolvedBreakpoint
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 Commands
 --------
 
@@ -123,6 +128,8 @@ to. For more information, see
 .. autofunction:: search_in_content
 
 .. autofunction:: set_async_call_stack_depth
+
+.. autofunction:: set_blackbox_execution_contexts
 
 .. autofunction:: set_blackbox_patterns
 
